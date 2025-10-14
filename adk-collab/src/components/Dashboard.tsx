@@ -76,6 +76,98 @@ export function Dashboard() {
     }
   };
 
+  // Helper function to extract readable content from agent results
+  const extractContent = (result: any): string => {
+    if (!result) return 'No content available';
+    
+    // Helper function to extract content from JSON code blocks
+    const extractFromCodeBlock = (text: string): string => {
+      if (typeof text !== 'string') return text;
+      
+      // Remove JSON code block markers
+      const codeBlockRegex = /```json\s*([\s\S]*?)\s*```/;
+      const match = text.match(codeBlockRegex);
+      
+      if (match) {
+        try {
+          const jsonContent = JSON.parse(match[1]);
+          return formatJsonToText(jsonContent);
+        } catch (e) {
+          // If JSON parsing fails, return the raw content without code blocks
+          return match[1];
+        }
+      }
+      
+      return text;
+    };
+    
+    // Helper function to convert JSON to readable text
+    const formatJsonToText = (obj: any, indent: string = ''): string => {
+      if (typeof obj === 'string') return extractFromCodeBlock(obj);
+      if (typeof obj === 'number' || typeof obj === 'boolean') return String(obj);
+      if (Array.isArray(obj)) {
+        return obj.map((item) => `${indent}• ${formatJsonToText(item, indent + '  ')}`).join('\n');
+      }
+      if (typeof obj === 'object' && obj !== null) {
+        return Object.entries(obj)
+          .filter(([key]) => !['agent', 'timestamp', 'session', 'id', 'type', 'status', 'generated_at'].includes(key.toLowerCase()))
+          .map(([key, value]) => {
+            const formattedKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1').replace(/_/g, ' ');
+            const formattedValue = formatJsonToText(value, indent + '  ');
+            return `${indent}**${formattedKey}:**\n${indent}${formattedValue}`;
+          }).join('\n\n');
+      }
+      return String(obj);
+    };
+    
+    // First try to extract string content and check for code blocks
+    if (typeof result === 'string') {
+      return extractFromCodeBlock(result);
+    }
+    
+    // Handle the specific agent response format from the API
+    if (typeof result === 'object') {
+      // For ResearchAgent responses - check findings field
+      if (result.findings) {
+        return extractFromCodeBlock(result.findings);
+      }
+      
+      // For WriterAgent responses - check final_article field  
+      if (result.final_article) {
+        return result.final_article;
+      }
+      
+      // For PlannerAgent responses - check task_analysis field
+      if (result.task_analysis) {
+        return extractFromCodeBlock(result.task_analysis);
+      }
+      
+      // For ReviewerAgent responses - multiple possible fields
+      if (result.review_report) {
+        return formatJsonToText(result.review_report);
+      }
+      
+      // Standard result processing for other response types
+      if (result.content) return extractFromCodeBlock(result.content);
+      if (result.strategy) return extractFromCodeBlock(result.strategy);
+      if (result.plan) return extractFromCodeBlock(result.plan);
+      if (result.feedback) return extractFromCodeBlock(result.feedback);
+      if (result.review) return formatJsonToText(result.review);
+      if (result.summary) return result.summary;
+      if (result.text) return extractFromCodeBlock(result.text);
+      if (result.description) return result.description;
+      if (result.analysis) return extractFromCodeBlock(result.analysis);
+      if (result.report) return formatJsonToText(result.report);
+      if (result.output) return result.output;
+      if (result.result) return extractFromCodeBlock(result.result);
+      
+      // If it's a complex object, format it nicely
+      return formatJsonToText(result);
+    }
+    
+    return 'Content processing completed successfully';
+  };
+
   // Handle task submission
   const handleTaskSubmit = async () => {
     if (!taskInput.trim()) return;
@@ -97,9 +189,7 @@ export function Dashboard() {
         agentName: msg.agent || 'Unknown Agent',
         agentRole: getAgentRole(msg.agent),
         action: getActionFromAgent(msg.agent),
-        description: typeof msg.result === 'string' 
-          ? msg.result 
-          : (msg.result as any)?.findings || (msg.result as any)?.content || (msg.result as any)?.strategy || 'Processing...',
+        description: extractContent(msg.result),
         timestamp: new Date(msg.timestamp).toLocaleTimeString(),
         avatar: getAvatarFromAgent(msg.agent)
       }))
@@ -384,10 +474,7 @@ export function Dashboard() {
                                 <div className="agent-output">
                                   <h4>📋 Planning Phase</h4>
                                   <div className="output-content">
-                                    {typeof liveTask.results.planning === 'string' 
-                                      ? liveTask.results.planning 
-                                      : (liveTask.results.planning as any).strategy || (liveTask.results.planning as any).plan || JSON.stringify(liveTask.results.planning, null, 2)
-                                    }
+                                    {extractContent(liveTask.results.planning)}
                                   </div>
                                 </div>
                               )}
@@ -396,10 +483,7 @@ export function Dashboard() {
                                 <div className="agent-output">
                                   <h4>🔍 Research Findings</h4>
                                   <div className="output-content">
-                                    {typeof liveTask.results.research === 'string' 
-                                      ? liveTask.results.research 
-                                      : (liveTask.results.research as any).findings || (liveTask.results.research as any).summary || JSON.stringify(liveTask.results.research, null, 2)
-                                    }
+                                    {extractContent(liveTask.results.research)}
                                   </div>
                                 </div>
                               )}
@@ -408,10 +492,7 @@ export function Dashboard() {
                                 <div className="agent-output">
                                   <h4>✍️ Written Content</h4>
                                   <div className="output-content">
-                                    {typeof liveTask.results.writing === 'string' 
-                                      ? liveTask.results.writing 
-                                      : (liveTask.results.writing as any).content || (liveTask.results.writing as any).text || JSON.stringify(liveTask.results.writing, null, 2)
-                                    }
+                                    {extractContent(liveTask.results.writing)}
                                   </div>
                                 </div>
                               )}
@@ -420,10 +501,7 @@ export function Dashboard() {
                                 <div className="agent-output">
                                   <h4>🔍 Quality Review</h4>
                                   <div className="output-content">
-                                    {typeof liveTask.results.review === 'string' 
-                                      ? liveTask.results.review 
-                                      : (liveTask.results.review as any).feedback || (liveTask.results.review as any).review || JSON.stringify(liveTask.results.review, null, 2)
-                                    }
+                                    {extractContent(liveTask.results.review)}
                                   </div>
                                 </div>
                               )}
@@ -441,10 +519,7 @@ export function Dashboard() {
                                   </div>
                                   {msg.result && (
                                     <div className="timeline-content">
-                                      {typeof msg.result === 'string' 
-                                        ? msg.result 
-                                        : (msg.result as any).findings || (msg.result as any).content || (msg.result as any).strategy || JSON.stringify(msg.result, null, 2)
-                                      }
+                                      {extractContent(msg.result)}
                                     </div>
                                   )}
                                 </div>
