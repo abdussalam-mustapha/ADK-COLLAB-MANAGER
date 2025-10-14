@@ -1,5 +1,49 @@
 import { useState, useEffect, useCallback } from 'react';
-import { apiClient, handleApiError, type AgentStatus, type CollaborationSession, type TaskRequest, type TaskResponse } from '../services/api';
+import { apiClient, handleApiError, type AgentStatus, type CollaborationSession, type TaskRequest, type CollaborationResult } from '../services/api';
+
+// Define TaskResponse type to match CollaborationResult from backend
+interface TaskResponse {
+  taskId: string;
+  status: 'completed' | 'failed' | 'in-progress';
+  agents: string[];
+  messages: {
+    id: string;
+    agentId: string;
+    agentName: string;
+    role: string;
+    content: string;
+    timestamp: string;
+    type: 'research' | 'content' | 'review' | 'planning';
+  }[];
+  // Add properties from CollaborationResult
+  success?: boolean;
+  session_id?: string;
+  original_prompt?: string;
+  collaboration_summary?: {
+    phases_completed: string[];
+    total_time_ms: number;
+    timestamp: string;
+  };
+  results?: {
+    planning: string;
+    research: string;
+    writing: string;
+    review: string;
+  };
+  final_output?: {
+    type: string;
+    title: string;
+    recommendations_applied: boolean;
+    summary: string;
+    content?: string;
+  };
+  conversation_history?: Array<{
+    session: string;
+    timestamp: string;
+    agent: string;
+    result: string;
+  }>;
+}
 
 // Custom hook for API state management
 export const useApi = () => {
@@ -88,32 +132,40 @@ export const useCollaboration = () => {
   const startCollaboration = useCallback(async (taskRequest: TaskRequest) => {
     return executeRequest(
       () => apiClient.startTeamCollaboration(taskRequest),
-      (data: any) => {
-        // Transform the backend response to our format
+      (data: CollaborationResult) => {
+        // Transform the backend CollaborationResult to our TaskResponse format
         const taskResponse: TaskResponse = {
-          taskId: data.collaborationId || 'task-' + Date.now(),
+          taskId: data.session_id,
           status: data.success ? 'completed' : 'failed',
-          agents: data.agents || [],
-          messages: data.conversations?.map((conv: any) => ({
-            id: conv.id || Math.random().toString(36),
-            agentId: conv.agent || 'unknown',
-            agentName: conv.agent || 'Unknown Agent',
-            role: conv.role || 'AI Agent',
-            content: conv.message || conv.content || '',
-            timestamp: new Date().toLocaleTimeString(),
-            type: 'research'
-          })) || []
+          agents: ['PlannerAgent', 'ResearchAgent', 'WriterAgent', 'ReviewerAgent'],
+          messages: data.conversation_history.map((conv, index) => ({
+              id: `msg-${index}`,
+              agentId: conv.agent,
+              agentName: conv.agent,
+              role: 'AI Agent',
+              content: conv.result,
+              timestamp: new Date(conv.timestamp).toLocaleTimeString(),
+              type: 'research' as const
+            })),
+          // Include all CollaborationResult properties
+          success: data.success,
+          session_id: data.session_id,
+          original_prompt: data.original_prompt,
+          collaboration_summary: data.collaboration_summary,
+          results: data.results,
+          final_output: data.final_output,
+          conversation_history: data.conversation_history
         };
         setCurrentTask(taskResponse);
         
-        // Add to history for demo purposes
+        // Add to history with real collaboration data
         const newSession: CollaborationSession = {
-          id: taskResponse.taskId,
-          title: taskRequest.task.slice(0, 50) + '...',
-          description: 'Team collaboration session',
+          id: data.session_id,
+          title: data.original_prompt.slice(0, 50) + (data.original_prompt.length > 50 ? '...' : ''),
+          description: `Completed in ${data.collaboration_summary.total_time_ms}ms`,
           status: 'completed',
-          participants: taskResponse.agents,
-          startTime: new Date().toLocaleTimeString(),
+          participants: ['PlannerAgent', 'ResearchAgent', 'WriterAgent', 'ReviewerAgent'],
+          startTime: new Date(data.collaboration_summary.timestamp).toLocaleTimeString(),
           messages: taskResponse.messages
         };
         setHistory(prev => [newSession, ...prev]);
@@ -140,7 +192,7 @@ export const useCollaboration = () => {
     return Promise.resolve();
   }, []);
 
-  const getTaskStatus = useCallback(async (taskId: string) => {
+  const getTaskStatus = useCallback(async (_taskId: string) => {
     // Since backend doesn't track individual tasks, return current task
     return currentTask;
   }, [currentTask]);

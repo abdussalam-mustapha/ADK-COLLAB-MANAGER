@@ -19,26 +19,6 @@ import {
   Zap
 } from 'lucide-react';
 
-interface Agent {
-  id: string;
-  name: string;
-  role: string;
-  description: string;
-  status: 'active' | 'idle' | 'working';
-  avatar: string;
-  lastActivity?: string;
-}
-
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  status: 'pending' | 'in-progress' | 'completed';
-  agents: string[];
-  progress: number;
-  createdAt: string;
-}
-
 interface AgentActivity {
   id: string;
   agentName: string;
@@ -65,6 +45,37 @@ export function Dashboard() {
   
   const { isHealthy: backendHealthy } = useBackendHealth();
 
+  // Helper functions for agent mapping
+  const getAgentRole = (agentName: string): string => {
+    switch (agentName?.toLowerCase()) {
+      case 'planneragent': return 'Strategic Planning & Coordination';
+      case 'researchagent': return 'Information Retrieval & Analysis';
+      case 'writeragent': return 'Content Generation & Synthesis';
+      case 'revieweragent': return 'Quality Assurance & Refinement';
+      default: return 'AI Assistant';
+    }
+  };
+
+  const getActionFromAgent = (agentName: string): string => {
+    switch (agentName?.toLowerCase()) {
+      case 'planneragent': return 'Strategic Planning';
+      case 'researchagent': return 'Research & Analysis';
+      case 'writeragent': return 'Content Creation';
+      case 'revieweragent': return 'Quality Review';
+      default: return 'Processing';
+    }
+  };
+
+  const getAvatarFromAgent = (agentName: string): string => {
+    switch (agentName?.toLowerCase()) {
+      case 'planneragent': return 'user';
+      case 'researchagent': return 'search';
+      case 'writeragent': return 'edit';
+      case 'revieweragent': return 'eye';
+      default: return 'user';
+    }
+  };
+
   // Handle task submission
   const handleTaskSubmit = async () => {
     if (!taskInput.trim()) return;
@@ -80,39 +91,53 @@ export function Dashboard() {
     }
   };
 
-  const recentActivity: AgentActivity[] = [
-    {
-      id: '1',
-      agentName: 'Researcher',
-      agentRole: 'Information Retrieval & Analysis',
-      action: 'Data Collection',
-      description: liveTask ? 'Working on: ' + liveTask.status : 'Initiating a comprehensive search for \'Ollama local AI\' and \'ADK-TS integration benchmarks\'. Focusing on recent publications and open-source projects.',
-      timestamp: '10:30 AM',
-      avatar: 'search'
-    },
-    {
-      id: '2',
-      agentName: 'Writer',
-      agentRole: 'Content Generation & Synthesis',
-      action: 'Report Structure',
-      description: liveTask ? `Processing task: ${liveTask.taskId}` : 'Received initial findings from Researcher. Beginning to structure the report outline: Introduction, Ollama Overview, ADK-TS Capabilities, Integration Benefits, and Future Prospects.',
-      timestamp: '10:35 AM',
-      avatar: 'edit'
-    },
-    {
-      id: '3',
-      agentName: 'Reviewer',
-      agentRole: 'Quality Assurance & Refinement',
-      action: 'Progress Monitoring',
-      description: collaborationError ? 'Backend connection issue detected' : 'Monitoring Writer\'s progress and Researcher\'s ongoing data collection. Will conduct an initial review for technical accuracy and best practice considerations.',
-      timestamp: '10:40 AM',
-      avatar: 'eye'
-    }
-  ];
+  const recentActivity: AgentActivity[] = liveTask?.conversation_history && liveTask.conversation_history.length > 0 
+    ? liveTask.conversation_history.slice(-3).map((msg: any, index: number) => ({
+        id: `live-${index}`,
+        agentName: msg.agent || 'Unknown Agent',
+        agentRole: getAgentRole(msg.agent),
+        action: getActionFromAgent(msg.agent),
+        description: typeof msg.result === 'string' 
+          ? msg.result 
+          : (msg.result as any)?.findings || (msg.result as any)?.content || (msg.result as any)?.strategy || 'Processing...',
+        timestamp: new Date(msg.timestamp).toLocaleTimeString(),
+        avatar: getAvatarFromAgent(msg.agent)
+      }))
+    : [
+      {
+        id: '1',
+        agentName: 'Researcher',
+        agentRole: 'Information Retrieval & Analysis',
+        action: 'Data Collection',
+        description: backendHealthy ? 'Ready to process research requests' : 'Initiating a comprehensive search for \'Ollama local AI\' and \'ADK-TS integration benchmarks\'. Focusing on recent publications and open-source projects.',
+        timestamp: '10:30 AM',
+        avatar: 'search'
+      },
+      {
+        id: '2',
+        agentName: 'Writer',
+        agentRole: 'Content Generation & Synthesis',
+        action: 'Report Structure',
+        description: backendHealthy ? 'Standing by for content creation tasks' : 'Received initial findings from Researcher. Beginning to structure the report outline: Introduction, Ollama Overview, ADK-TS Capabilities, Integration Benefits, and Future Prospects.',
+        timestamp: '10:35 AM',
+        avatar: 'edit'
+      },
+      {
+        id: '3',
+        agentName: 'Reviewer',
+        agentRole: 'Quality Assurance & Refinement',
+        action: 'Progress Monitoring',
+        description: collaborationError ? 'Backend connection issue detected' : 'Monitoring for quality assurance opportunities',
+        timestamp: '10:40 AM',
+        avatar: 'eye'
+      }
+    ];
 
   const taskSummary = liveTask 
     ? `***Task ID:*** ${liveTask.taskId} ***Status:*** ${liveTask.status} ***Agents:*** ${liveTask.agents.join(', ')} ***Messages:*** ${liveTask.messages.length} agent interactions recorded.`
     : `***Task Goal:*** Generate a comprehensive report on integrating Ollama's local AI capabilities with ADK-TS for efficient AI agent collaboration. ***Key Agents:*** Researcher (data collection), Writer (content generation), Reviewer (quality assurance). ***Current Status:*** ${backendHealthy ? 'Ready for collaboration' : 'Backend offline - using demo mode'}. ***Connection:*** ${backendHealthy ? 'Connected to ADK-TS backend' : 'Disconnected - check backend server'}.`;
+
+  const finalOutput = liveTask?.final_output ? liveTask.final_output.summary : null;
 
   const getAgentIcon = (iconType: string) => {
     switch (iconType) {
@@ -226,6 +251,32 @@ export function Dashboard() {
 
         {/* Dashboard Content */}
         <div className="dashboard-content">
+          {collaborationError && (
+            <div className="error-banner">
+              <div className="error-content">
+                <span className="error-icon">⚠️</span>
+                <div className="error-text">
+                  <strong>Backend Connection Issue:</strong> {collaborationError}
+                  <br />
+                  <small>Please ensure the backend server is running on http://localhost:5000</small>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {backendHealthy && !collaborationError && liveTask && (
+            <div className="success-banner">
+              <div className="success-content">
+                <span className="success-icon">✅</span>
+                <div className="success-text">
+                  <strong>Backend Connected!</strong> Real-time collaboration active.
+                  <br />
+                  <small>Current task: {liveTask.taskId}</small>
+                </div>
+              </div>
+            </div>
+          )}
+          
           {activeSection === 'agents' ? (
             <AgentsPage />
           ) : activeSection === 'history' ? (
@@ -320,7 +371,90 @@ export function Dashboard() {
                   
                   {showFinalOutput && (
                     <div className="final-output-content">
-                      <p>Final report will be generated here once all agents complete their tasks...</p>
+                      {finalOutput ? (
+                        <div className="collaboration-results">
+                          <div className="result-summary">
+                            <h3>Collaboration Summary</h3>
+                            <p>{finalOutput}</p>
+                          </div>
+                          
+                          {liveTask?.results && (
+                            <div className="agent-outputs">
+                              {liveTask.results.planning && (
+                                <div className="agent-output">
+                                  <h4>📋 Planning Phase</h4>
+                                  <div className="output-content">
+                                    {typeof liveTask.results.planning === 'string' 
+                                      ? liveTask.results.planning 
+                                      : (liveTask.results.planning as any).strategy || (liveTask.results.planning as any).plan || JSON.stringify(liveTask.results.planning, null, 2)
+                                    }
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {liveTask.results.research && (
+                                <div className="agent-output">
+                                  <h4>🔍 Research Findings</h4>
+                                  <div className="output-content">
+                                    {typeof liveTask.results.research === 'string' 
+                                      ? liveTask.results.research 
+                                      : (liveTask.results.research as any).findings || (liveTask.results.research as any).summary || JSON.stringify(liveTask.results.research, null, 2)
+                                    }
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {liveTask.results.writing && (
+                                <div className="agent-output">
+                                  <h4>✍️ Written Content</h4>
+                                  <div className="output-content">
+                                    {typeof liveTask.results.writing === 'string' 
+                                      ? liveTask.results.writing 
+                                      : (liveTask.results.writing as any).content || (liveTask.results.writing as any).text || JSON.stringify(liveTask.results.writing, null, 2)
+                                    }
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {liveTask.results.review && (
+                                <div className="agent-output">
+                                  <h4>🔍 Quality Review</h4>
+                                  <div className="output-content">
+                                    {typeof liveTask.results.review === 'string' 
+                                      ? liveTask.results.review 
+                                      : (liveTask.results.review as any).feedback || (liveTask.results.review as any).review || JSON.stringify(liveTask.results.review, null, 2)
+                                    }
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          
+                          {liveTask?.conversation_history && liveTask.conversation_history.length > 0 && (
+                            <div className="conversation-timeline">
+                              <h3>Agent Conversation Timeline</h3>
+                              {liveTask.conversation_history.map((msg: any, index: number) => (
+                                <div key={index} className="timeline-item">
+                                  <div className="timeline-header">
+                                    <span className="agent-name">{msg.agent}</span>
+                                    <span className="timestamp">{new Date(msg.timestamp).toLocaleTimeString()}</span>
+                                  </div>
+                                  {msg.result && (
+                                    <div className="timeline-content">
+                                      {typeof msg.result === 'string' 
+                                        ? msg.result 
+                                        : (msg.result as any).findings || (msg.result as any).content || (msg.result as any).strategy || JSON.stringify(msg.result, null, 2)
+                                      }
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <p>Final report will be generated here once all agents complete their tasks...</p>
+                      )}
                     </div>
                   )}
                 </section>

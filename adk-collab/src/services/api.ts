@@ -15,11 +15,42 @@ export interface TaskRequest {
   agents?: string[];
 }
 
-export interface TaskResponse {
-  taskId: string;
-  status: 'initiated' | 'in-progress' | 'completed' | 'failed';
-  agents: string[];
-  messages: AgentMessage[];
+export interface CollaborationResult {
+  success: boolean;
+  session_id: string;
+  original_prompt: string;
+  collaboration_summary: {
+    phases_completed: string[];
+    total_time_ms: number;
+    timestamp: string;
+  };
+  results: {
+    planning: string;
+    research: string;
+    writing: string;
+    review: string;
+  };
+  final_output: {
+    type: string;
+    title: string;
+    recommendations_applied: boolean;
+    summary: string;
+    content?: string;
+  };
+  conversation_history: Array<{
+    session: string;
+    timestamp: string;
+    agent: string;
+    result: string;
+  }>;
+}
+
+export interface TeamStatus {
+  available: boolean;
+  initialized: boolean;
+  agents: Record<string, string>;
+  active_sessions: number;
+  total_interactions: number;
 }
 
 export interface AgentMessage {
@@ -88,7 +119,7 @@ class ApiClient {
     return this.request('/api/team/status');
   }
 
-  async startTeamCollaboration(taskRequest: TaskRequest): Promise<TaskResponse> {
+  async startTeamCollaboration(taskRequest: TaskRequest): Promise<CollaborationResult> {
     return this.request('/api/team/collaborate', {
       method: 'POST',
       body: JSON.stringify({ prompt: taskRequest.task, options: taskRequest.agents }),

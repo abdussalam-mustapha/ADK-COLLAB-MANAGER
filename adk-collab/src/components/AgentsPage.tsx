@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import './AgentsPage.css';
 import { useAgents } from '../hooks/useApi';
 import { 
@@ -10,17 +9,7 @@ import {
   User
 } from 'lucide-react';
 
-interface Agent {
-  id: string;
-  name: string;
-  description: string;
-  status: 'active' | 'inactive';
-  iconType: string;
-}
-
 export function AgentsPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  
   // Use real backend data
   const { agents: backendAgents, isLoading, error, updateAgentStatus } = useAgents();
   

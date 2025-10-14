@@ -36,7 +36,7 @@ const HistoryPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'conversations' | 'tasks'>('conversations');
 
   // Use real backend data
-  const { history: backendHistory, isLoading, error } = useCollaboration();
+  const { history: backendHistory } = useCollaboration();
 
   // Use backend data if available, fallback to mock data for demo
   const collaborationFlows: CollaborationFlow[] = backendHistory.length > 0 
