@@ -16,7 +16,9 @@ import {
   ChevronDown,
   FileEdit,
   Eye,
-  Zap
+  Zap,
+  Copy,
+  Check
 } from 'lucide-react';
 
 interface AgentActivity {
@@ -34,6 +36,7 @@ export function Dashboard() {
   const [taskInput, setTaskInput] = useState('');
   const [showTaskSummary, setShowTaskSummary] = useState(true);
   const [showFinalOutput, setShowFinalOutput] = useState(false);
+  const [copiedContent, setCopiedContent] = useState<string | null>(null);
 
   // Backend integration
   const { 
@@ -180,6 +183,17 @@ export function Dashboard() {
       setTaskInput(''); // Clear input on success
     } catch (error) {
       console.error('Failed to start collaboration:', error);
+    }
+  };
+
+  // Handle copy content functionality
+  const handleCopyContent = async (content: string, agentType: string) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopiedContent(agentType);
+      setTimeout(() => setCopiedContent(null), 2000); // Reset after 2 seconds
+    } catch (error) {
+      console.error('Failed to copy content:', error);
     }
   };
 
@@ -472,7 +486,20 @@ export function Dashboard() {
                             <div className="agent-outputs">
                               {liveTask.results.planning && (
                                 <div className="agent-output">
-                                  <h4>📋 Planning Phase</h4>
+                                  <div className="agent-output-header">
+                                    <h4>📋 Planning Phase</h4>
+                                    <button 
+                                      className="copy-btn"
+                                      onClick={() => handleCopyContent(extractContent(liveTask.results.planning), 'planning')}
+                                      title="Copy planning content"
+                                    >
+                                      {copiedContent === 'planning' ? (
+                                        <Check className="w-4 h-4 text-green-500" />
+                                      ) : (
+                                        <Copy className="w-4 h-4" />
+                                      )}
+                                    </button>
+                                  </div>
                                   <div className="output-content">
                                     {extractContent(liveTask.results.planning)}
                                   </div>
@@ -481,7 +508,20 @@ export function Dashboard() {
                               
                               {liveTask.results.research && (
                                 <div className="agent-output">
-                                  <h4>🔍 Research Findings</h4>
+                                  <div className="agent-output-header">
+                                    <h4>🔍 Research Findings</h4>
+                                    <button 
+                                      className="copy-btn"
+                                      onClick={() => handleCopyContent(extractContent(liveTask.results.research), 'research')}
+                                      title="Copy research content"
+                                    >
+                                      {copiedContent === 'research' ? (
+                                        <Check className="w-4 h-4 text-green-500" />
+                                      ) : (
+                                        <Copy className="w-4 h-4" />
+                                      )}
+                                    </button>
+                                  </div>
                                   <div className="output-content">
                                     {extractContent(liveTask.results.research)}
                                   </div>
@@ -490,7 +530,20 @@ export function Dashboard() {
                               
                               {liveTask.results.writing && (
                                 <div className="agent-output">
-                                  <h4>✍️ Written Content</h4>
+                                  <div className="agent-output-header">
+                                    <h4>✍️ Written Content</h4>
+                                    <button 
+                                      className="copy-btn"
+                                      onClick={() => handleCopyContent(extractContent(liveTask.results.writing), 'writing')}
+                                      title="Copy written content"
+                                    >
+                                      {copiedContent === 'writing' ? (
+                                        <Check className="w-4 h-4 text-green-500" />
+                                      ) : (
+                                        <Copy className="w-4 h-4" />
+                                      )}
+                                    </button>
+                                  </div>
                                   <div className="output-content">
                                     {extractContent(liveTask.results.writing)}
                                   </div>
@@ -499,7 +552,20 @@ export function Dashboard() {
                               
                               {liveTask.results.review && (
                                 <div className="agent-output">
-                                  <h4>🔍 Quality Review</h4>
+                                  <div className="agent-output-header">
+                                    <h4>🔍 Quality Review</h4>
+                                    <button 
+                                      className="copy-btn"
+                                      onClick={() => handleCopyContent(extractContent(liveTask.results.review), 'review')}
+                                      title="Copy review content"
+                                    >
+                                      {copiedContent === 'review' ? (
+                                        <Check className="w-4 h-4 text-green-500" />
+                                      ) : (
+                                        <Copy className="w-4 h-4" />
+                                      )}
+                                    </button>
+                                  </div>
                                   <div className="output-content">
                                     {extractContent(liveTask.results.review)}
                                   </div>
@@ -514,8 +580,21 @@ export function Dashboard() {
                               {liveTask.conversation_history.map((msg: any, index: number) => (
                                 <div key={index} className="timeline-item">
                                   <div className="timeline-header">
-                                    <span className="agent-name">{msg.agent}</span>
-                                    <span className="timestamp">{new Date(msg.timestamp).toLocaleTimeString()}</span>
+                                    <div className="timeline-info">
+                                      <span className="agent-name">{msg.agent}</span>
+                                      <span className="timestamp">{new Date(msg.timestamp).toLocaleTimeString()}</span>
+                                    </div>
+                                    <button 
+                                      className="copy-btn"
+                                      onClick={() => handleCopyContent(extractContent(msg.result), `timeline-${index}`)}
+                                      title={`Copy ${msg.agent} content`}
+                                    >
+                                      {copiedContent === `timeline-${index}` ? (
+                                        <Check className="w-4 h-4 text-green-500" />
+                                      ) : (
+                                        <Copy className="w-4 h-4" />
+                                      )}
+                                    </button>
                                   </div>
                                   {msg.result && (
                                     <div className="timeline-content">
