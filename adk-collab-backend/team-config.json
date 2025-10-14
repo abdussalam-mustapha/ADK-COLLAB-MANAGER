@@ -1,0 +1,102 @@
+{
+  "team": {
+    "name": "ADK-COLLAB AI Team",
+    "description": "Local AI agent framework powered by ADK-TS + Ollama for team collaboration",
+    "version": "1.0.0"
+  },
+  "agents": [
+    {
+      "name": "PlannerAgent",
+      "role": "Strategic Planning & Coordination",
+      "description": "Analyzes requests, breaks down tasks, and creates execution plans",
+      "capabilities": [
+        "task_decomposition",
+        "strategic_planning", 
+        "workflow_coordination",
+        "resource_estimation"
+      ],
+      "priority": 1,
+      "enabled": true
+    },
+    {
+      "name": "ResearchAgent", 
+      "role": "Research & Information Gathering",
+      "description": "Specializes in gathering, analyzing, and synthesizing information",
+      "capabilities": [
+        "information_gathering",
+        "data_analysis",
+        "fact_checking",
+        "research_synthesis"
+      ],
+      "priority": 2,
+      "enabled": true
+    },
+    {
+      "name": "WriterAgent",
+      "role": "Content Creation & Writing", 
+      "description": "Creates structured, engaging content from research and requirements",
+      "capabilities": [
+        "content_creation",
+        "structured_writing",
+        "document_formatting", 
+        "audience_adaptation"
+      ],
+      "priority": 3,
+      "enabled": true
+    },
+    {
+      "name": "ReviewerAgent",
+      "role": "Quality Assurance & Improvement",
+      "description": "Reviews content for accuracy, clarity, and overall quality",
+      "capabilities": [
+        "quality_assurance",
+        "content_review",
+        "improvement_suggestions",
+        "fact_verification"
+      ],
+      "priority": 4,
+      "enabled": true
+    }
+  ],
+  "workflows": {
+    "default": {
+      "name": "Full Team Collaboration",
+      "phases": ["planning", "research", "writing", "review"],
+      "description": "Complete workflow involving all team members"
+    },
+    "research_only": {
+      "name": "Research & Analysis",
+      "phases": ["research"],
+      "description": "Focus on information gathering and analysis"
+    },
+    "content_creation": {
+      "name": "Content Creation",
+      "phases": ["research", "writing"],
+      "description": "Research followed by content creation"
+    },
+    "quick_draft": {
+      "name": "Quick Draft",
+      "phases": ["writing"],
+      "description": "Direct content creation without extensive research"
+    }
+  },
+  "collaboration_rules": {
+    "max_iterations": 3,
+    "timeout_per_phase_ms": 60000,
+    "require_consensus": false,
+    "auto_retry_on_failure": true,
+    "preserve_context": true
+  },
+  "output_formats": {
+    "structured": {
+      "include_metadata": true,
+      "include_reasoning": true,
+      "include_sources": true
+    },
+    "simple": {
+      "include_metadata": false,
+      "include_reasoning": false,
+      "final_output_only": true
+    }
+  }
+}
