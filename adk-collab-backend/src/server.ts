@@ -1,10 +1,20 @@
 import express from "express";
+import cors from "cors";
 import { createAgent } from "./agent.js";
 import { getModel } from "./modelProvider.js";
 import { OLLAMA_BASE_URL } from "./config.js";
 import { TeamManager } from "./agents/TeamManager.js";
 
 const app = express();
+
+// Configure CORS to allow requests from the frontend
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:3000'], // Allow both Vite and potential other ports
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
+
 app.use(express.json());
 
 // Initialize the agent and team
