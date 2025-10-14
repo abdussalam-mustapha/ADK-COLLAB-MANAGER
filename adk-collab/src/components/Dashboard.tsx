@@ -490,7 +490,7 @@ export function Dashboard() {
                                     <h4>📋 Planning Phase</h4>
                                     <button 
                                       className="copy-btn"
-                                      onClick={() => handleCopyContent(extractContent(liveTask.results.planning), 'planning')}
+                                      onClick={() => handleCopyContent(extractContent(liveTask.results?.planning), 'planning')}
                                       title="Copy planning content"
                                     >
                                       {copiedContent === 'planning' ? (
@@ -501,7 +501,7 @@ export function Dashboard() {
                                     </button>
                                   </div>
                                   <div className="output-content">
-                                    {extractContent(liveTask.results.planning)}
+                                    {extractContent(liveTask.results?.planning)}
                                   </div>
                                 </div>
                               )}
@@ -512,7 +512,7 @@ export function Dashboard() {
                                     <h4>🔍 Research Findings</h4>
                                     <button 
                                       className="copy-btn"
-                                      onClick={() => handleCopyContent(extractContent(liveTask.results.research), 'research')}
+                                      onClick={() => handleCopyContent(extractContent(liveTask.results?.research), 'research')}
                                       title="Copy research content"
                                     >
                                       {copiedContent === 'research' ? (
@@ -523,7 +523,7 @@ export function Dashboard() {
                                     </button>
                                   </div>
                                   <div className="output-content">
-                                    {extractContent(liveTask.results.research)}
+                                    {extractContent(liveTask.results?.research)}
                                   </div>
                                 </div>
                               )}
@@ -534,7 +534,7 @@ export function Dashboard() {
                                     <h4>✍️ Written Content</h4>
                                     <button 
                                       className="copy-btn"
-                                      onClick={() => handleCopyContent(extractContent(liveTask.results.writing), 'writing')}
+                                      onClick={() => handleCopyContent(extractContent(liveTask.results?.writing), 'writing')}
                                       title="Copy written content"
                                     >
                                       {copiedContent === 'writing' ? (
@@ -545,7 +545,7 @@ export function Dashboard() {
                                     </button>
                                   </div>
                                   <div className="output-content">
-                                    {extractContent(liveTask.results.writing)}
+                                    {extractContent(liveTask.results?.writing)}
                                   </div>
                                 </div>
                               )}
@@ -556,7 +556,7 @@ export function Dashboard() {
                                     <h4>🔍 Quality Review</h4>
                                     <button 
                                       className="copy-btn"
-                                      onClick={() => handleCopyContent(extractContent(liveTask.results.review), 'review')}
+                                      onClick={() => handleCopyContent(extractContent(liveTask.results?.review), 'review')}
                                       title="Copy review content"
                                     >
                                       {copiedContent === 'review' ? (
@@ -567,7 +567,7 @@ export function Dashboard() {
                                     </button>
                                   </div>
                                   <div className="output-content">
-                                    {extractContent(liveTask.results.review)}
+                                    {extractContent(liveTask.results?.review)}
                                   </div>
                                 </div>
                               )}

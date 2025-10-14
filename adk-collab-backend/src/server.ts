@@ -150,6 +150,135 @@ app.post("/api/team/clear-history", (req, res) => {
   });
 });
 
+// New API Endpoints for enhanced functionality
+
+// Get collaboration history
+app.get("/api/history", async (req, res) => {
+  if (!teamInitialized) {
+    return res.status(503).json({ error: "Team not initialized" });
+  }
+  
+  try {
+    const history = await teamManager.getHistory();
+    res.json({ success: true, history });
+  } catch (error) {
+    console.error("Error getting history:", error);
+    res.status(500).json({ error: "Failed to get history" });
+  }
+});
+
+// Get specific session
+app.get("/api/sessions/:sessionId", async (req, res) => {
+  if (!teamInitialized) {
+    return res.status(503).json({ error: "Team not initialized" });
+  }
+  
+  try {
+    const session = await teamManager.getSession(req.params.sessionId);
+    if (!session) {
+      return res.status(404).json({ error: "Session not found" });
+    }
+    res.json({ success: true, session });
+  } catch (error) {
+    console.error("Error getting session:", error);
+    res.status(500).json({ error: "Failed to get session" });
+  }
+});
+
+// Get all agents
+app.get("/api/agents", async (req, res) => {
+  if (!teamInitialized) {
+    return res.status(503).json({ error: "Team not initialized" });
+  }
+  
+  try {
+    const agents = await teamManager.getAgents();
+    res.json({ success: true, agents });
+  } catch (error) {
+    console.error("Error getting agents:", error);
+    res.status(500).json({ error: "Failed to get agents" });
+  }
+});
+
+// Create new agent
+app.post("/api/agents", async (req, res) => {
+  if (!teamInitialized) {
+    return res.status(503).json({ error: "Team not initialized" });
+  }
+  
+  try {
+    const { name, description, role, capabilities, model } = req.body;
+    
+    if (!name || !description || !role) {
+      return res.status(400).json({ error: "Missing required fields: name, description, role" });
+    }
+    
+    const agent = await teamManager.addAgent({
+      name,
+      description,
+      role,
+      capabilities: capabilities || [],
+      model
+    });
+    
+    res.json({ success: true, agent });
+  } catch (error) {
+    console.error("Error creating agent:", error);
+    res.status(500).json({ error: "Failed to create agent" });
+  }
+});
+
+// Update agent
+app.put("/api/agents/:agentId", async (req, res) => {
+  if (!teamInitialized) {
+    return res.status(503).json({ error: "Team not initialized" });
+  }
+  
+  try {
+    const agent = await teamManager.updateAgent(req.params.agentId, req.body);
+    if (!agent) {
+      return res.status(404).json({ error: "Agent not found" });
+    }
+    res.json({ success: true, agent });
+  } catch (error) {
+    console.error("Error updating agent:", error);
+    res.status(500).json({ error: "Failed to update agent" });
+  }
+});
+
+// Delete agent
+app.delete("/api/agents/:agentId", async (req, res) => {
+  if (!teamInitialized) {
+    return res.status(503).json({ error: "Team not initialized" });
+  }
+  
+  try {
+    const success = await teamManager.deleteAgent(req.params.agentId);
+    if (!success) {
+      return res.status(404).json({ error: "Agent not found" });
+    }
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting agent:", error);
+    res.status(500).json({ error: "Failed to delete agent" });
+  }
+});
+
+// Get collaboration statistics
+app.get("/api/stats", async (req, res) => {
+  if (!teamInitialized) {
+    return res.status(503).json({ error: "Team not initialized" });
+  }
+  
+  try {
+    const stats = await teamManager.getStats();
+    res.json({ success: true, stats });
+  } catch (error) {
+    console.error("Error getting stats:", error);
+    res.status(500).json({ error: "Failed to get stats" });
+  }
+});
+
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.json({ 

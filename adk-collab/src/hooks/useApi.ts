@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { apiClient, handleApiError, type AgentStatus, type CollaborationSession, type TaskRequest, type CollaborationResult } from '../services/api';
+import { apiClient, handleApiError, type AgentStatus, type CollaborationSession, type TaskRequest, type CollaborationResult, type StoredAgent, type CreateAgentRequest } from '../services/api';
 
 // Define TaskResponse type to match CollaborationResult from backend
 interface TaskResponse {
@@ -158,17 +158,36 @@ export const useCollaboration = () => {
         };
         setCurrentTask(taskResponse);
         
-        // Add to history with real collaboration data
-        const newSession: CollaborationSession = {
-          id: data.session_id,
-          title: data.original_prompt.slice(0, 50) + (data.original_prompt.length > 50 ? '...' : ''),
-          description: `Completed in ${data.collaboration_summary.total_time_ms}ms`,
-          status: 'completed',
-          participants: ['PlannerAgent', 'ResearchAgent', 'WriterAgent', 'ReviewerAgent'],
-          startTime: new Date(data.collaboration_summary.timestamp).toLocaleTimeString(),
-          messages: taskResponse.messages
-        };
-        setHistory(prev => [newSession, ...prev]);
+        // Refresh history after successful collaboration
+        fetchHistory();
+      }
+    );
+  }, [executeRequest]);
+
+  const fetchHistory = useCallback(async () => {
+    return executeRequest(
+      () => apiClient.getHistory(),
+      (data) => {
+        // Transform stored sessions to collaboration sessions format
+        const transformedHistory: CollaborationSession[] = data.history.map((session: any) => ({
+          id: session.id,
+          title: session.title,
+          description: session.description,
+          status: session.status === 'completed' ? 'completed' as const : 
+                 session.status === 'in-progress' ? 'active' as const : 'paused' as const,
+          participants: session.participants,
+          startTime: new Date(session.startTime).toLocaleTimeString(),
+          messages: session.conversation_history.map((conv: any, index: number) => ({
+            id: `msg-${index}`,
+            agentId: conv.agent,
+            agentName: conv.agent,
+            role: 'AI Agent',
+            content: conv.result,
+            timestamp: new Date(conv.timestamp).toLocaleTimeString(),
+            type: 'research' as const
+          }))
+        }));
+        setHistory(transformedHistory);
       }
     );
   }, [executeRequest]);
@@ -186,12 +205,6 @@ export const useCollaboration = () => {
     );
   }, [executeRequest]);
 
-  const fetchHistory = useCallback(async () => {
-    // Since backend doesn't have history endpoint, keep using local state
-    // In a real app, you'd implement a history storage mechanism
-    return Promise.resolve();
-  }, []);
-
   const getTaskStatus = useCallback(async (_taskId: string) => {
     // Since backend doesn't track individual tasks, return current task
     return currentTask;
@@ -199,7 +212,8 @@ export const useCollaboration = () => {
 
   useEffect(() => {
     fetchActiveSessions();
-  }, [fetchActiveSessions]);
+    fetchHistory(); // Load history on mount
+  }, [fetchActiveSessions, fetchHistory]);
 
   return {
     activeSessions,
@@ -337,5 +351,92 @@ export const useRealTimeUpdates = (onUpdate?: (data: any) => void) => {
   return {
     isConnected,
     lastMessage
+  };
+};
+
+// Hook for agent management
+export const useAgentManagement = () => {
+  const [agents, setAgents] = useState<StoredAgent[]>([]);
+  const { isLoading, error, executeRequest } = useApi();
+
+  const fetchAgents = useCallback(async () => {
+    return executeRequest(
+      () => apiClient.getAgents(),
+      (data) => {
+        setAgents(data.agents);
+      }
+    );
+  }, [executeRequest]);
+
+  const createAgent = useCallback(async (agentData: CreateAgentRequest) => {
+    return executeRequest(
+      () => apiClient.createAgent(agentData),
+      (data) => {
+        setAgents(prev => [...prev, data.agent]);
+        return data.agent;
+      }
+    );
+  }, [executeRequest]);
+
+  const updateAgent = useCallback(async (agentId: string, updates: Partial<StoredAgent>) => {
+    return executeRequest(
+      () => apiClient.updateAgent(agentId, updates),
+      (data) => {
+        setAgents(prev => prev.map(agent => 
+          agent.id === agentId ? data.agent : agent
+        ));
+        return data.agent;
+      }
+    );
+  }, [executeRequest]);
+
+  const deleteAgent = useCallback(async (agentId: string) => {
+    return executeRequest(
+      () => apiClient.deleteAgent(agentId),
+      () => {
+        setAgents(prev => prev.filter(agent => agent.id !== agentId));
+        return true;
+      }
+    );
+  }, [executeRequest]);
+
+  useEffect(() => {
+    fetchAgents();
+  }, [fetchAgents]);
+
+  return {
+    agents,
+    isLoading,
+    error,
+    fetchAgents,
+    createAgent,
+    updateAgent,
+    deleteAgent
+  };
+};
+
+// Hook for collaboration statistics
+export const useStats = () => {
+  const [stats, setStats] = useState<any>(null);
+  const { isLoading, error, executeRequest } = useApi();
+
+  const fetchStats = useCallback(async () => {
+    return executeRequest(
+      () => apiClient.getStats(),
+      (data) => {
+        setStats(data.stats);
+      }
+    );
+  }, [executeRequest]);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
+  return {
+    stats,
+    isLoading,
+    error,
+    fetchStats
   };
 };

@@ -2,6 +2,7 @@ import { ResearchAgent } from "./ResearchAgent.js";
 import { WriterAgent } from "./WriterAgent.js";
 import { ReviewerAgent } from "./ReviewerAgent.js";
 import { PlannerAgent } from "./PlannerAgent.js";
+import { fileStorage, type StoredSession } from "../storage/FileStorage.js";
 
 /**
  * TeamManager - Orchestrates collaboration between specialized agents
@@ -25,6 +26,10 @@ export class TeamManager {
   async initialize() {
     try {
       console.log("🚀 Initializing AI Team...");
+      
+      // Initialize file storage
+      await fileStorage.init();
+      console.log("💾 Storage system initialized");
       
       // Initialize all agents in parallel
       await Promise.all([
@@ -157,8 +162,35 @@ export class TeamManager {
         writingResult,
         reviewResult
       ),
-      conversation_history: this.getHistory(sessionId)
+      conversation_history: this.getSessionHistory(sessionId)
     };
+
+    // Save session to storage
+    try {
+      const storedSession = await fileStorage.saveSession({
+        title: userPrompt.slice(0, 100) + (userPrompt.length > 100 ? '...' : ''),
+        description: `Completed in ${collaborationTime}ms with ${finalResponse.collaboration_summary.phases_completed.length} phases`,
+        originalPrompt: userPrompt,
+        status: 'completed',
+        participants: ['PlannerAgent', 'ResearchAgent', 'WriterAgent', 'ReviewerAgent'],
+        startTime: new Date(collaborationStart).toISOString(),
+        endTime: new Date().toISOString(),
+        results: finalResponse.results,
+        final_output: finalResponse.final_output,
+        conversation_history: finalResponse.conversation_history,
+      collaboration_summary: {
+        phases_completed: finalResponse.collaboration_summary.phases_completed.filter((phase): phase is string => phase !== null),
+        total_time_ms: finalResponse.collaboration_summary.total_time_ms,
+        timestamp: finalResponse.collaboration_summary.timestamp
+      }
+      });
+      
+      // Update session ID to match stored session
+      finalResponse.session_id = storedSession.id;
+      console.log(`💾 Session saved with ID: ${storedSession.id}`);
+    } catch (error) {
+      console.error('⚠️  Failed to save session:', error);
+    }
 
     return finalResponse;
   }
@@ -230,7 +262,7 @@ export class TeamManager {
   /**
    * Get conversation history for a session
    */
-  private getHistory(sessionId: string) {
+  private getSessionHistory(sessionId: string) {
     return this.conversationHistory.filter(h => h.session === sessionId);
   }
 
@@ -257,5 +289,99 @@ export class TeamManager {
   clearHistory() {
     this.conversationHistory = [];
     console.log("🧹 Conversation history cleared");
+  }
+
+  /**
+   * Get collaboration history from storage
+   */
+  async getHistory(): Promise<StoredSession[]> {
+    try {
+      return await fileStorage.getAllSessions();
+    } catch (error) {
+      console.error('Failed to get history:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get specific session by ID
+   */
+  async getSession(sessionId: string): Promise<StoredSession | null> {
+    try {
+      return await fileStorage.getSessionById(sessionId);
+    } catch (error) {
+      console.error('Failed to get session:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get all available agents
+   */
+  async getAgents(): Promise<any[]> {
+    try {
+      return await fileStorage.getAllAgents();
+    } catch (error) {
+      console.error('Failed to get agents:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Add new agent
+   */
+  async addAgent(agentData: {
+    name: string;
+    description: string;
+    role: string;
+    capabilities: string[];
+    model?: string;
+  }): Promise<any> {
+    try {
+      return await fileStorage.saveAgent({
+        ...agentData,
+        model: agentData.model || 'gpt-oss:120b-cloud',
+        isActive: true
+      });
+    } catch (error) {
+      console.error('Failed to add agent:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update agent
+   */
+  async updateAgent(agentId: string, updates: any): Promise<any> {
+    try {
+      return await fileStorage.updateAgent(agentId, updates);
+    } catch (error) {
+      console.error('Failed to update agent:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete agent
+   */
+  async deleteAgent(agentId: string): Promise<boolean> {
+    try {
+      return await fileStorage.deleteAgent(agentId);
+    } catch (error) {
+      console.error('Failed to delete agent:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Get session statistics
+   */
+  async getStats(): Promise<any> {
+    try {
+      return await fileStorage.getSessionStats();
+    } catch (error) {
+      console.error('Failed to get stats:', error);
+      return { total: 0, completed: 0, failed: 0, inProgress: 0 };
+    }
   }
 }

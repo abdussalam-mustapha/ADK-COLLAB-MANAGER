@@ -31,19 +31,23 @@ interface CollaborationFlow {
 }
 
 const HistoryPage: React.FC = () => {
-  const [selectedFlow, setSelectedFlow] = useState<string | null>('flow-1');
+  const [selectedFlow, setSelectedFlow] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'conversations' | 'tasks'>('conversations');
 
   // Use real backend data
-  const { history: backendHistory } = useCollaboration();
+  const { history: backendHistory, isLoading, error } = useCollaboration();
 
-  // Use backend data if available, fallback to mock data for demo
+  // Transform backend history to match our UI format
   const collaborationFlows: CollaborationFlow[] = backendHistory.length > 0 
-    ? backendHistory.map(session => ({
-        ...session,
-        status: session.status === 'active' ? 'in-progress' as const : session.status as 'completed' | 'paused',
-        messages: session.messages.map(msg => ({
+    ? backendHistory.map((session) => ({
+        id: session.id,
+        title: session.title,
+        description: session.description,
+        participants: session.participants,
+        startTime: session.startTime,
+        status: session.status as 'completed' | 'in-progress' | 'paused',
+        messages: session.messages.map((msg) => ({
           id: msg.id,
           agent: msg.agentName,
           role: msg.role,
@@ -124,7 +128,16 @@ const HistoryPage: React.FC = () => {
     }
   ];
 
-  const taskHistory: TaskHistoryItem[] = [
+  // Transform backend history to task format
+  const taskHistory: TaskHistoryItem[] = backendHistory.length > 0
+    ? backendHistory.map((session) => ({
+        id: session.id,
+        prompt: session.title,
+        agents: session.participants,
+        dateInitiated: new Date().toISOString().split('T')[0], // Since we don't have date from backend
+        status: session.status === 'completed' ? 'completed' as const : 'pending' as const
+      }))
+    : [
     {
       id: 'CM-001',
       prompt: 'Research current trends in AI ethics and generate a report.',
@@ -161,6 +174,13 @@ const HistoryPage: React.FC = () => {
       status: 'completed'
     }
   ];
+
+  // Auto-select the first flow if available and none selected
+  React.useEffect(() => {
+    if (collaborationFlows.length > 0 && !selectedFlow) {
+      setSelectedFlow(collaborationFlows[0].id);
+    }
+  }, [collaborationFlows, selectedFlow]);
 
   const getAgentColor = (type: string) => {
     switch (type) {
@@ -236,6 +256,28 @@ const HistoryPage: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Loading State */}
+      {isLoading && (
+        <div className="loading-state">
+          <div className="loading-spinner"></div>
+          <p>Loading collaboration history...</p>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="error-state">
+          <div className="error-content">
+            <span className="error-icon">⚠️</span>
+            <div className="error-text">
+              <strong>Failed to load history:</strong> {error}
+              <br />
+              <small>Please check your backend connection</small>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="history-content">
         {viewMode === 'conversations' ? (

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "planner-agent",
+    "name": "PlannerAgent",
+    "description": "Strategic planning and task coordination specialist",
+    "role": "Strategic Coordinator",
+    "capabilities": [
+      "task-analysis",
+      "planning",
+      "coordination"
+    ],
+    "model": "gpt-oss:120b-cloud",
+    "isActive": true,
+    "createdAt": "2025-10-14T22:32:12.593Z",
+    "updatedAt": "2025-10-14T22:32:12.594Z"
+  },
+  {
+    "id": "research-agent",
+    "name": "ResearchAgent",
+    "description": "Information gathering and analysis specialist",
+    "role": "Data Analyst & Information Gatherer",
+    "capabilities": [
+      "research",
+      "analysis",
+      "data-collection"
+    ],
+    "model": "gpt-oss:120b-cloud",
+    "isActive": true,
+    "createdAt": "2025-10-14T22:32:12.594Z",
+    "updatedAt": "2025-10-14T22:32:12.594Z"
+  },
+  {
+    "id": "writer-agent",
+    "name": "WriterAgent",
+    "description": "Content creation and synthesis specialist",
+    "role": "Content Creator & Synthesizer",
+    "capabilities": [
+      "writing",
+      "content-creation",
+      "synthesis"
+    ],
+    "model": "gpt-oss:120b-cloud",
+    "isActive": true,
+    "createdAt": "2025-10-14T22:32:12.594Z",
+    "updatedAt": "2025-10-14T22:32:12.594Z"
+  },
+  {
+    "id": "reviewer-agent",
+    "name": "ReviewerAgent",
+    "description": "Quality assurance and content review specialist",
+    "role": "Quality Assurance & Editor",
+    "capabilities": [
+      "review",
+      "quality-assurance",
+      "editing"
+    ],
+    "model": "gpt-oss:120b-cloud",
+    "isActive": true,
+    "createdAt": "2025-10-14T22:32:12.594Z",
+    "updatedAt": "2025-10-14T22:32:12.594Z"
+  }
+]

@@ -73,6 +73,63 @@ export interface CollaborationSession {
   messages: AgentMessage[];
 }
 
+export interface StoredAgent {
+  id: string;
+  name: string;
+  description: string;
+  role: string;
+  capabilities: string[];
+  model: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredSession {
+  id: string;
+  title: string;
+  description: string;
+  originalPrompt: string;
+  status: 'completed' | 'failed' | 'in-progress';
+  participants: string[];
+  startTime: string;
+  endTime?: string;
+  results?: {
+    planning?: any;
+    research?: any;
+    writing?: any;
+    review?: any;
+  };
+  final_output?: {
+    type: string;
+    title: string;
+    recommendations_applied: boolean;
+    summary: string;
+    content?: string;
+  };
+  conversation_history: Array<{
+    session: string;
+    timestamp: string;
+    agent: string;
+    result: any;
+  }>;
+  collaboration_summary?: {
+    phases_completed: string[];
+    total_time_ms: number;
+    timestamp: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateAgentRequest {
+  name: string;
+  description: string;
+  role: string;
+  capabilities?: string[];
+  model?: string;
+}
+
 // API Client class
 class ApiClient {
   private baseUrl: string;
@@ -138,6 +195,51 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify({ prompt }),
     });
+  }
+
+  // New API methods for enhanced functionality
+
+  // Get collaboration history
+  async getHistory(): Promise<{ success: boolean; history: StoredSession[] }> {
+    return this.request('/api/history');
+  }
+
+  // Get specific session
+  async getSession(sessionId: string): Promise<{ success: boolean; session: StoredSession }> {
+    return this.request(`/api/sessions/${sessionId}`);
+  }
+
+  // Get all agents
+  async getAgents(): Promise<{ success: boolean; agents: StoredAgent[] }> {
+    return this.request('/api/agents');
+  }
+
+  // Create new agent
+  async createAgent(agentData: CreateAgentRequest): Promise<{ success: boolean; agent: StoredAgent }> {
+    return this.request('/api/agents', {
+      method: 'POST',
+      body: JSON.stringify(agentData),
+    });
+  }
+
+  // Update agent
+  async updateAgent(agentId: string, updates: Partial<StoredAgent>): Promise<{ success: boolean; agent: StoredAgent }> {
+    return this.request(`/api/agents/${agentId}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  }
+
+  // Delete agent
+  async deleteAgent(agentId: string): Promise<{ success: boolean }> {
+    return this.request(`/api/agents/${agentId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Get statistics
+  async getStats(): Promise<{ success: boolean; stats: any }> {
+    return this.request('/api/stats');
   }
 }
 
