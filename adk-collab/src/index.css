@@ -171,7 +171,7 @@ button:focus-visible {
 /* Header */
 .header {
   background-color: var(--background-dark);
-  border-bottom: 1px solid var(--border-gray);
+  border-bottom: 1px solid var(--card-background);
   padding: 1rem 0;
   position: sticky;
   top: 0;
@@ -185,10 +185,11 @@ button:focus-visible {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 1rem;
+  position: relative;
 }
 
 .header-logo {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--text-white);
   text-decoration: none;
@@ -197,15 +198,66 @@ button:focus-visible {
   gap: 0.5rem;
 }
 
+@media (min-width: 768px) {
+  .header-logo {
+    font-size: 1.5rem;
+  }
+}
+
+.mobile-menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-white);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.mobile-menu-btn:hover {
+  background-color: var(--card-background);
+}
+
+@media (min-width: 768px) {
+  .mobile-menu-btn {
+    display: none;
+  }
+}
+
 .header-nav {
   display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--background-dark);
+  border-top: 1px solid var(--card-background);
+  padding: 1rem;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.header-nav.mobile-menu-open {
+  display: flex;
 }
 
 @media (min-width: 768px) {
   .header-nav {
     display: flex;
+    position: static;
+    background: none;
+    border: none;
+    padding: 0;
+    flex-direction: row;
     align-items: center;
     gap: 2rem;
+  }
+  
+  .header-nav.mobile-menu-open {
+    display: flex;
   }
 }
 
@@ -214,16 +266,44 @@ button:focus-visible {
   text-decoration: none;
   font-weight: 500;
   transition: color 0.15s ease-in-out;
+  padding: 0.5rem 0;
+}
+
+@media (min-width: 768px) {
+  .header-nav-link {
+    padding: 0;
+  }
 }
 
 .header-nav-link:hover {
   color: var(--text-white);
 }
 
-.header-actions {
+.mobile-actions {
   display: flex;
-  align-items: center;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--card-background);
+}
+
+@media (min-width: 768px) {
+  .mobile-actions {
+    display: none;
+  }
+}
+
+.header-actions {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
 }
 
 .btn {
@@ -238,19 +318,31 @@ button:focus-visible {
   border: 1px solid transparent;
   text-decoration: none;
   font-family: inherit;
+  min-height: 44px; /* Better touch targets on mobile */
 }
 
 .btn-sm {
   padding: 0.5rem 1rem;
+  min-height: 40px;
 }
 
 .btn-md {
   padding: 0.625rem 1.25rem;
+  min-height: 44px;
 }
 
 .btn-lg {
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
+  min-height: 48px;
+}
+
+/* Mobile button improvements */
+@media (max-width: 767px) {
+  .mobile-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .btn-primary {
@@ -284,8 +376,14 @@ button:focus-visible {
 
 /* Hero Section */
 .hero-section {
-  padding: 6rem 0;
+  padding: 4rem 0;
   background-color: var(--background-dark);
+}
+
+@media (min-width: 768px) {
+  .hero-section {
+    padding: 6rem 0;
+  }
 }
 
 .hero-container {
@@ -294,8 +392,14 @@ button:focus-visible {
   padding: 0 1rem;
   display: grid;
   grid-template-columns: 1fr;
-  gap: 3rem;
+  gap: 2rem;
   align-items: center;
+}
+
+@media (min-width: 768px) {
+  .hero-container {
+    gap: 3rem;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -306,20 +410,29 @@ button:focus-visible {
 
 .hero-content {
   text-align: center;
+  order: 2;
 }
 
 @media (min-width: 1024px) {
   .hero-content {
     text-align: left;
+    order: 1;
   }
 }
 
 .hero-title {
-  font-size: 3rem;
+  font-size: 2.5rem;
   font-weight: 700;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   color: var(--text-white);
   line-height: 1.1;
+}
+
+@media (min-width: 768px) {
+  .hero-title {
+    font-size: 3rem;
+    margin-bottom: 1.5rem;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -329,10 +442,27 @@ button:focus-visible {
 }
 
 .hero-subtitle {
-  font-size: 1.25rem;
-  margin-bottom: 2rem;
+  font-size: 1.125rem;
+  margin-bottom: 1.5rem;
   color: var(--text-gray-light);
   line-height: 1.6;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 768px) {
+  .hero-subtitle {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-subtitle {
+    margin-left: 0;
+    margin-right: 0;
+  }
 }
 
 .hero-actions {
@@ -342,10 +472,16 @@ button:focus-visible {
   align-items: center;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   .hero-actions {
     flex-direction: row;
-    align-items: flex-start;
+    justify-content: center;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-actions {
+    justify-content: flex-start;
   }
 }
 
@@ -353,18 +489,44 @@ button:focus-visible {
   display: flex;
   justify-content: center;
   align-items: center;
+  order: 1;
+}
+
+@media (min-width: 1024px) {
+  .hero-visual {
+    order: 2;
+  }
 }
 
 .hero-image {
   width: 100%;
-  max-width: 500px;
+  max-width: 400px;
   height: auto;
   border-radius: 1rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+}
+
+@media (min-width: 768px) {
+  .hero-image {
+    max-width: 500px;
+  }
 }
 
 /* Section Styles */
 .section {
-  padding: 5rem 0;
+  padding: 3rem 0;
+}
+
+@media (min-width: 768px) {
+  .section {
+    padding: 4rem 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .section {
+    padding: 5rem 0;
+  }
 }
 
 .section-dark {
@@ -373,22 +535,52 @@ button:focus-visible {
 
 .section-header {
   text-align: center;
-  margin-bottom: 4rem;
+  margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+  .section-header {
+    margin-bottom: 3rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .section-header {
+    margin-bottom: 4rem;
+  }
 }
 
 .section-title {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 700;
   color: var(--text-white);
   margin-bottom: 1rem;
 }
 
+@media (min-width: 768px) {
+  .section-title {
+    font-size: 2.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .section-title {
+    font-size: 2.5rem;
+  }
+}
+
 .section-description {
-  font-size: 1.125rem;
+  font-size: 1rem;
   color: var(--text-gray-light);
   max-width: 48rem;
   margin: 0 auto;
   line-height: 1.6;
+}
+
+@media (min-width: 768px) {
+  .section-description {
+    font-size: 1.125rem;
+  }
 }
 
 /* Feature Cards */

@@ -1,4 +1,5 @@
-import { ArrowRight, Brain } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import collabImage from '../../assets/collab-image.jpg';
 
 interface HeroSectionProps {
   onGetStarted?: () => void;
@@ -28,31 +29,11 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
         </div>
         
         <div className="hero-visual">
-          {/* AI Brain Visual */}
-          <div style={{
-            width: '400px',
-            height: '300px',
-            backgroundColor: '#252525',
-            borderRadius: '1rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            position: 'relative',
-            background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4)',
-            backgroundSize: '400% 400%',
-            animation: 'gradient 15s ease infinite'
-          }}>
-            <Brain className="w-24 h-24" style={{ color: 'white' }} />
-            <style>
-              {`
-                @keyframes gradient {
-                  0% { background-position: 0% 50%; }
-                  50% { background-position: 100% 50%; }
-                  100% { background-position: 0% 50%; }
-                }
-              `}
-            </style>
-          </div>
+          <img 
+            src={collabImage} 
+            alt="AI Agent Collaboration" 
+            className="hero-image"
+          />
         </div>
       </div>
     </section>
