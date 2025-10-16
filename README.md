@@ -157,27 +157,6 @@ npm run dev
 
 Frontend will be available at `http://localhost:5173`
 
-### 4. Google Search Setup (Optional)
-
-For enhanced research capabilities:
-
-1. **Create Google Custom Search Engine**:
-   - Visit [Google Custom Search](https://cse.google.com/)
-   - Create a new search engine
-   - Set it to search the entire web
-   - Copy the Search Engine ID
-
-2. **Get Google API Key**:
-   - Go to [Google Cloud Console](https://console.cloud.google.com/)
-   - Enable the Custom Search JSON API
-   - Create credentials (API Key)
-   - Copy the API key
-
-3. **Update Environment**:
-   ```env
-   GOOGLE_SEARCH_API_KEY=your_api_key_here
-   GOOGLE_SEARCH_ENGINE_ID=your_engine_id_here
-   ```
 
 ## How It Works
 
