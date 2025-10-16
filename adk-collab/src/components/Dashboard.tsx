@@ -3,7 +3,8 @@ import './Dashboard.css';
 import { AgentsPage } from './AgentsPage';
 import HistoryPage from './HistoryPage';
 import SettingsPage from './SettingsPage';
-import { useCollaboration, useBackendHealth } from '../hooks/useApi';
+import { useCollaboration, useBackendHealth, useAgents } from '../hooks/useApi';
+import { apiClient } from '../services/api';
 import { 
   LayoutDashboard, 
   Users, 
@@ -16,9 +17,10 @@ import {
   ChevronDown,
   FileEdit,
   Eye,
-  Zap,
+  Brain,
   Copy,
-  Check
+  Check,
+  X
 } from 'lucide-react';
 
 interface AgentActivity {
@@ -37,6 +39,26 @@ export function Dashboard() {
   const [showTaskSummary, setShowTaskSummary] = useState(true);
   const [showFinalOutput, setShowFinalOutput] = useState(false);
   const [copiedContent, setCopiedContent] = useState<string | null>(null);
+  
+  // Modal states for new agent and task creation
+  const [showNewAgentModal, setShowNewAgentModal] = useState(false);
+  const [showNewTaskModal, setShowNewTaskModal] = useState(false);
+  
+  // Form states
+  const [newAgentForm, setNewAgentForm] = useState({
+    name: '',
+    description: '',
+    role: '',
+    capabilities: '',
+    model: 'gpt-oss:120b-cloud'
+  });
+  
+  const [newTaskForm, setNewTaskForm] = useState({
+    title: '',
+    description: '',
+    priority: 'medium',
+    agents: [] as string[]
+  });
 
   // Backend integration
   const { 
@@ -47,6 +69,9 @@ export function Dashboard() {
   } = useCollaboration();
   
   const { isHealthy: backendHealthy } = useBackendHealth();
+  
+  // Agent management
+  const { agents: availableAgents, fetchAgents } = useAgents();
 
   // Helper functions for agent mapping
   const getAgentRole = (agentName: string): string => {
@@ -197,6 +222,59 @@ export function Dashboard() {
     }
   };
 
+  // Handle new agent creation
+  const handleCreateAgent = async () => {
+    try {
+      const capabilities = newAgentForm.capabilities.split(',').map(c => c.trim()).filter(c => c);
+      
+      const response = await apiClient.createAgent({
+        name: newAgentForm.name,
+        description: newAgentForm.description,
+        role: newAgentForm.role,
+        capabilities,
+        model: newAgentForm.model
+      });
+
+      if (response.success) {
+        setShowNewAgentModal(false);
+        setNewAgentForm({
+          name: '',
+          description: '',
+          role: '',
+          capabilities: '',
+          model: 'gpt-oss:120b-cloud'
+        });
+        
+        // Refresh agents list
+        fetchAgents();
+        
+        console.log('Agent created successfully:', response.agent);
+      }
+    } catch (error) {
+      console.error('Failed to create agent:', error);
+    }
+  };
+
+  // Handle new task creation
+  const handleCreateTask = async () => {
+    try {
+      await startCollaboration({
+        task: `${newTaskForm.title}: ${newTaskForm.description}`,
+        agents: newTaskForm.agents.length > 0 ? newTaskForm.agents : ['researcher', 'writer', 'reviewer']
+      });
+      
+      setShowNewTaskModal(false);
+      setNewTaskForm({
+        title: '',
+        description: '',
+        priority: 'medium',
+        agents: []
+      });
+    } catch (error) {
+      console.error('Failed to create task:', error);
+    }
+  };
+
   const recentActivity: AgentActivity[] = liveTask?.conversation_history && liveTask.conversation_history.length > 0 
     ? liveTask.conversation_history.slice(-3).map((msg: any, index: number) => ({
         id: `live-${index}`,
@@ -269,8 +347,7 @@ export function Dashboard() {
       <aside className="dashboard-sidebar">
         <div className="sidebar-header">
           <div className="sidebar-logo">
-            <Zap className="logo-icon" />
-            <span className="logo-text">logo</span>
+            <Brain className="logo-icon" />
           </div>
         </div>
 
@@ -331,7 +408,7 @@ export function Dashboard() {
             <div className="backend-status">
               <div className={`status-indicator ${backendHealthy ? 'healthy' : 'unhealthy'}`}>
                 <div className="status-dot"></div>
-                {backendHealthy ? 'Backend Connected' : 'Backend Offline'}
+                {backendHealthy ? 'Agent Connected' : 'Agent Offline'}
               </div>
             </div>
             <div className="search-container">
@@ -342,11 +419,17 @@ export function Dashboard() {
                 className="search-input"
               />
             </div>
-            <button className="btn btn-secondary">
+            <button 
+              className="btn btn-secondary"
+              onClick={() => setShowNewAgentModal(true)}
+            >
               <UserPlus className="w-4 h-4" />
               New Agent
             </button>
-            <button className="btn btn-primary">
+            <button 
+              className="btn btn-primary"
+              onClick={() => setShowNewTaskModal(true)}
+            >
               <Plus className="w-4 h-4" />
               New Task
             </button>
@@ -373,7 +456,7 @@ export function Dashboard() {
               <div className="success-content">
                 <span className="success-icon">✅</span>
                 <div className="success-text">
-                  <strong>Backend Connected!</strong> Real-time collaboration active.
+                  <strong>Agent Connected!</strong> Real-time collaboration active.
                   <br />
                   <small>Current task: {liveTask.taskId}</small>
                 </div>
@@ -617,6 +700,197 @@ export function Dashboard() {
           )}
         </div>
       </main>
+
+      {/* New Agent Modal */}
+      {showNewAgentModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-header">
+              <h3>Create New Agent</h3>
+              <button 
+                className="modal-close"
+                onClick={() => setShowNewAgentModal(false)}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              <div className="form-group">
+                <label>Agent Name</label>
+                <input
+                  type="text"
+                  value={newAgentForm.name}
+                  onChange={(e) => setNewAgentForm(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="e.g., AnalysisAgent"
+                  className="form-input"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Role</label>
+                <input
+                  type="text"
+                  value={newAgentForm.role}
+                  onChange={(e) => setNewAgentForm(prev => ({ ...prev, role: e.target.value }))}
+                  placeholder="e.g., Data Analysis Specialist"
+                  className="form-input"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Description</label>
+                <textarea
+                  value={newAgentForm.description}
+                  onChange={(e) => setNewAgentForm(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Describe what this agent does..."
+                  className="form-textarea"
+                  rows={3}
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Capabilities (comma-separated)</label>
+                <input
+                  type="text"
+                  value={newAgentForm.capabilities}
+                  onChange={(e) => setNewAgentForm(prev => ({ ...prev, capabilities: e.target.value }))}
+                  placeholder="e.g., data-analysis, visualization, reporting"
+                  className="form-input"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Model</label>
+                <select
+                  value={newAgentForm.model}
+                  onChange={(e) => setNewAgentForm(prev => ({ ...prev, model: e.target.value }))}
+                  className="form-select"
+                >
+                  <option value="gpt-oss:120b-cloud">gpt-oss:120b-cloud</option>
+                  <option value="llama2">llama2</option>
+                  <option value="codellama">codellama</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="modal-footer">
+              <button 
+                className="btn btn-secondary"
+                onClick={() => setShowNewAgentModal(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="btn btn-primary"
+                onClick={handleCreateAgent}
+                disabled={!newAgentForm.name || !newAgentForm.role || !newAgentForm.description}
+              >
+                Create Agent
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* New Task Modal */}
+      {showNewTaskModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-header">
+              <h3>Create New Task</h3>
+              <button 
+                className="modal-close"
+                onClick={() => setShowNewTaskModal(false)}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              <div className="form-group">
+                <label>Task Title</label>
+                <input
+                  type="text"
+                  value={newTaskForm.title}
+                  onChange={(e) => setNewTaskForm(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="e.g., Market Research Analysis"
+                  className="form-input"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Task Description</label>
+                <textarea
+                  value={newTaskForm.description}
+                  onChange={(e) => setNewTaskForm(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Describe the task in detail..."
+                  className="form-textarea"
+                  rows={4}
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Priority</label>
+                <select
+                  value={newTaskForm.priority}
+                  onChange={(e) => setNewTaskForm(prev => ({ ...prev, priority: e.target.value }))}
+                  className="form-select"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
+              
+              <div className="form-group">
+                <label>Assign Agents (optional)</label>
+                <div className="agent-checkboxes">
+                  {availableAgents.map((agent) => (
+                    <label key={agent.id} className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={newTaskForm.agents.includes(agent.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setNewTaskForm(prev => ({ 
+                              ...prev, 
+                              agents: [...prev.agents, agent.id] 
+                            }));
+                          } else {
+                            setNewTaskForm(prev => ({ 
+                              ...prev, 
+                              agents: prev.agents.filter(id => id !== agent.id) 
+                            }));
+                          }
+                        }}
+                      />
+                      {agent.name}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            <div className="modal-footer">
+              <button 
+                className="btn btn-secondary"
+                onClick={() => setShowNewTaskModal(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="btn btn-primary"
+                onClick={handleCreateTask}
+                disabled={!newTaskForm.title || !newTaskForm.description}
+              >
+                Create Task
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

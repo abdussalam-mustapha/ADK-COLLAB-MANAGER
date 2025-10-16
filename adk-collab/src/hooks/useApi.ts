@@ -77,33 +77,61 @@ export const useApi = () => {
 
 // Hook for agent management
 export const useAgents = () => {
-  const [agents, setAgents] = useState<AgentStatus[]>([]);
-  const [teamStatus, setTeamStatus] = useState<any>(null);
-  const { isLoading, error, executeRequest } = useApi();
+  const [agents, setAgents] = useState<AgentStatus[]>([
+    {
+      id: 'planner-agent',
+      name: 'PlannerAgent',
+      role: 'Strategic Coordinator',
+      status: 'active' as const,
+      isOnline: true
+    },
+    {
+      id: 'research-agent',
+      name: 'ResearchAgent',
+      role: 'Data Analyst & Information Gatherer',
+      status: 'active' as const,
+      isOnline: true
+    },
+    {
+      id: 'writer-agent',
+      name: 'WriterAgent',
+      role: 'Content Creator & Synthesizer',
+      status: 'active' as const,
+      isOnline: true
+    },
+    {
+      id: 'reviewer-agent',
+      name: 'ReviewerAgent',
+      role: 'Quality Assurance & Editor',
+      status: 'active' as const,
+      isOnline: true
+    }
+  ]);
+  const [teamStatus] = useState<any>(null);
+  const { isLoading, error } = useApi();
 
   const fetchAgents = useCallback(async () => {
-    return executeRequest(
-      () => apiClient.getTeamStatus(),
-      (data) => {
-        setTeamStatus(data);
-        // Convert team status agents to AgentStatus format
-        if (data.agents) {
-          const agentList: AgentStatus[] = Object.entries(data.agents).map(([id, description]) => ({
-            id,
-            name: id.charAt(0).toUpperCase() + id.slice(1),
-            role: description as string,
-            status: 'active' as const,
-            isOnline: data.available || false
-          }));
-          setAgents(agentList);
-        }
+    // For now, we'll use the static agents above
+    // Later this can be updated to fetch from the backend
+    try {
+      const response = await apiClient.getAgents();
+      if (response.success && response.agents) {
+        const agentList: AgentStatus[] = response.agents.map((agent) => ({
+          id: agent.id,
+          name: agent.name,
+          role: agent.role,
+          status: agent.isActive ? 'active' as const : 'idle' as const,
+          isOnline: agent.isActive
+        }));
+        setAgents(agentList);
       }
-    );
-  }, [executeRequest]);
+    } catch (error) {
+      console.log('Failed to fetch agents from backend, using default agents');
+      // Keep using the default agents initialized above
+    }
+  }, []);
 
   const updateAgentStatus = useCallback(async (agentId: string, status: 'active' | 'idle') => {
-    // Since the backend doesn't have individual agent status updates,
-    // we'll just refetch the team status
     console.log(`Agent ${agentId} status change requested: ${status}`);
     return fetchAgents();
   }, [fetchAgents]);

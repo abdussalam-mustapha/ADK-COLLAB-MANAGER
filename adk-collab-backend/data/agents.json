@@ -58,5 +58,19 @@
     "isActive": true,
     "createdAt": "2025-10-14T22:32:12.594Z",
     "updatedAt": "2025-10-14T22:32:12.594Z"
+  },
+  {
+    "name": "code Assistant",
+    "description": "helps you with code writing",
+    "role": "pair programmer",
+    "capabilities": [
+      "code genration",
+      "code review"
+    ],
+    "model": "gpt-oss:120b-cloud",
+    "isActive": true,
+    "id": "code-assistant-1760577327178",
+    "createdAt": "2025-10-16T01:15:27.178Z",
+    "updatedAt": "2025-10-16T01:15:27.178Z"
   }
 ]

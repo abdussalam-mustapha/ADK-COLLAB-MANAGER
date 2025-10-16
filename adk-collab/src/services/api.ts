@@ -85,6 +85,14 @@ export interface StoredAgent {
   updatedAt: string;
 }
 
+export interface CreateAgentRequest {
+  name: string;
+  description: string;
+  role: string;
+  capabilities: string[];
+  model?: string;
+}
+
 export interface StoredSession {
   id: string;
   title: string;
@@ -120,14 +128,6 @@ export interface StoredSession {
   };
   createdAt: string;
   updatedAt: string;
-}
-
-export interface CreateAgentRequest {
-  name: string;
-  description: string;
-  role: string;
-  capabilities?: string[];
-  model?: string;
 }
 
 // API Client class
