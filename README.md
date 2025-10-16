@@ -87,7 +87,7 @@ adk-collab-backend/
 
 - **Node.js** (v18 or higher)
 - **npm** or **yarn**
-- **Ollama** (for local AI models) - *Optional*
+- **Ollama** (for local AI models) 
 - **Google Search API** credentials - *Optional*
 
 ### 1. Clone the Repository
@@ -114,19 +114,16 @@ cp .env.example .env
 Edit `.env` file:
 
 ```env
-# Ollama Configuration (Optional - for local models)
+# Ollama Configuration 
 OLLAMA_BASE_URL=http://localhost:11434
 
-# Google Search API (Optional - for web search)
-GOOGLE_SEARCH_API_KEY=your_google_api_key
-GOOGLE_SEARCH_ENGINE_ID=your_search_engine_id
 
 # Server Configuration
 PORT=5000
 NODE_ENV=development
 ```
 
-#### Install Ollama (Optional - for local models)
+#### Install Ollama 
 
 ```bash
 # Download and install Ollama from https://ollama.ai/
