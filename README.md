@@ -348,6 +348,420 @@ private extractSearchQueries(prompt: string): string[] {
 - **Technical Topics**: Recent developments and best practices
 - **Market Data**: Industry reports and insights
 
+## API Documentation
+
+### **Base URL**
+```
+http://localhost:5000
+```
+
+### **Authentication**
+Currently, no authentication is required. All endpoints are open for development and testing.
+
+### **Response Format**
+All API responses follow a consistent JSON format:
+```json
+{
+  "success": true,
+  "data": {...},
+  "error": "Error message (if any)"
+}
+```
+
+### **Core Endpoints**
+
+#### **Health Check**
+```http
+GET /health
+```
+**Description**: Check server status and feature availability  
+**Response**:
+```json
+{
+  "status": "ok",
+  "provider": "ollama",
+  "features": {
+    "single_agent": true,
+    "team_collaboration": true,
+    "model_provider": "ollama"
+  },
+  "timestamp": "2025-10-16T12:00:00.000Z"
+}
+```
+
+#### **Single Agent Chat**
+```http
+POST /api/ask
+```
+**Description**: Interact with a single AI agent  
+**Request Body**:
+```json
+{
+  "prompt": "Your question or request"
+}
+```
+**Response**:
+```json
+{
+  "reply": "Agent's response"
+}
+```
+
+### **Team Collaboration Endpoints**
+
+#### **Team Collaboration**
+```http
+POST /api/team/collaborate
+```
+**Description**: Process requests through the multi-agent team  
+**Request Body**:
+```json
+{
+  "prompt": "Your complex task or question",
+  "options": {
+    "skipPlanning": false,
+    "skipResearch": false,
+    "skipWriting": false,
+    "skipReview": false
+  }
+}
+```
+**Response**:
+```json
+{
+  "success": true,
+  "sessionId": "uuid-string",
+  "task": "Original task",
+  "phases": {
+    "planning": {
+      "agent": "PlannerAgent",
+      "content": "Planning results...",
+      "timestamp": "2025-10-16T12:00:00.000Z"
+    },
+    "research": {
+      "agent": "ResearchAgent", 
+      "content": "Research findings...",
+      "search_performed": true,
+      "search_queries": ["query1", "query2"]
+    },
+    "writing": {
+      "agent": "WriterAgent",
+      "content": "Written content..."
+    },
+    "review": {
+      "agent": "ReviewerAgent",
+      "content": "Review and improvements..."
+    }
+  },
+  "finalOutput": "Consolidated final result",
+  "duration": 15432,
+  "timestamp": "2025-10-16T12:00:00.000Z"
+}
+```
+
+#### **Team Status**
+```http
+GET /api/team/status
+```
+**Description**: Get current team status and member information  
+**Response**:
+```json
+{
+  "available": true,
+  "teamMembers": [
+    {
+      "name": "PlannerAgent",
+      "role": "Strategic Planning & Coordination",
+      "status": "active"
+    },
+    {
+      "name": "ResearchAgent", 
+      "role": "Research & Information Gathering",
+      "status": "active"
+    }
+  ],
+  "totalMembers": 4,
+  "activeMembers": 4
+}
+```
+
+#### **Clear Team History**
+```http
+POST /api/team/clear-history
+```
+**Description**: Clear team conversation history (useful for demos)  
+**Response**:
+```json
+{
+  "success": true,
+  "message": "Team conversation history cleared"
+}
+```
+
+### **Session Management**
+
+#### **Get Collaboration History**
+```http
+GET /api/history
+```
+**Description**: Retrieve all collaboration sessions  
+**Response**:
+```json
+{
+  "success": true,
+  "history": [
+    {
+      "id": "session-uuid",
+      "task": "Original task",
+      "timestamp": "2025-10-16T12:00:00.000Z",
+      "duration": 15432,
+      "agents_used": ["PlannerAgent", "ResearchAgent", "WriterAgent", "ReviewerAgent"],
+      "final_output": "Final result..."
+    }
+  ]
+}
+```
+
+#### **Get Specific Session**
+```http
+GET /api/sessions/:sessionId
+```
+**Description**: Retrieve details of a specific collaboration session  
+**Response**:
+```json
+{
+  "success": true,
+  "session": {
+    "id": "session-uuid",
+    "task": "Original task",
+    "phases": {...},
+    "finalOutput": "Final result",
+    "timestamp": "2025-10-16T12:00:00.000Z"
+  }
+}
+```
+
+### **Agent Management**
+
+#### **Get All Agents**
+```http
+GET /api/agents
+```
+**Description**: Retrieve all registered agents  
+**Response**:
+```json
+{
+  "success": true,
+  "agents": [
+    {
+      "id": "agent-uuid",
+      "name": "ResearchAgent",
+      "description": "Specializes in information gathering",
+      "role": "Research & Information Gathering", 
+      "capabilities": ["information_gathering", "web_search", "data_analysis"],
+      "model": "gemini-2.5-flash",
+      "created_at": "2025-10-16T12:00:00.000Z",
+      "status": "active"
+    }
+  ]
+}
+```
+
+#### **Create New Agent**
+```http
+POST /api/agents
+```
+**Description**: Register a new agent in the system  
+**Request Body**:
+```json
+{
+  "name": "CustomAgent",
+  "description": "Specialized agent for custom tasks",
+  "role": "Custom Task Specialist",
+  "capabilities": ["custom_capability_1", "custom_capability_2"],
+  "model": "gpt-4"
+}
+```
+**Response**:
+```json
+{
+  "success": true,
+  "agent": {
+    "id": "new-agent-uuid",
+    "name": "CustomAgent",
+    "description": "Specialized agent for custom tasks",
+    "role": "Custom Task Specialist",
+    "capabilities": ["custom_capability_1", "custom_capability_2"],
+    "model": "gpt-4",
+    "created_at": "2025-10-16T12:00:00.000Z",
+    "status": "active"
+  }
+}
+```
+
+#### **Update Agent**
+```http
+PUT /api/agents/:agentId
+```
+**Description**: Update an existing agent's configuration  
+**Request Body**:
+```json
+{
+  "description": "Updated description",
+  "capabilities": ["updated_capability"],
+  "status": "inactive"
+}
+```
+**Response**:
+```json
+{
+  "success": true,
+  "agent": {
+    "id": "agent-uuid",
+    "name": "AgentName",
+    "description": "Updated description",
+    "capabilities": ["updated_capability"],
+    "status": "inactive"
+  }
+}
+```
+
+#### **Delete Agent**
+```http
+DELETE /api/agents/:agentId
+```
+**Description**: Remove an agent from the system  
+**Response**:
+```json
+{
+  "success": true
+}
+```
+
+### **Analytics & Statistics**
+
+#### **Get Collaboration Stats**
+```http
+GET /api/stats
+```
+**Description**: Retrieve system usage statistics  
+**Response**:
+```json
+{
+  "success": true,
+  "stats": {
+    "total_sessions": 25,
+    "total_agents": 6,
+    "average_session_duration": 12500,
+    "most_active_agent": "ResearchAgent",
+    "collaboration_success_rate": 0.96,
+    "popular_capabilities": [
+      "information_gathering",
+      "content_creation", 
+      "quality_assurance"
+    ]
+  }
+}
+```
+
+### **Error Responses**
+
+All endpoints may return the following error responses:
+
+#### **400 Bad Request**
+```json
+{
+  "error": "Prompt is required"
+}
+```
+
+#### **404 Not Found**
+```json
+{
+  "error": "Session not found"
+}
+```
+
+#### **500 Internal Server Error**
+```json
+{
+  "error": "Team collaboration failed",
+  "details": "Specific error details"
+}
+```
+
+#### **503 Service Unavailable**
+```json
+{
+  "error": "AI Team is not available",
+  "fallback": "Use /api/ask for single-agent responses"
+}
+```
+
+### **Usage Examples**
+
+#### **Python Example**
+```python
+import requests
+import json
+
+# Base URL
+BASE_URL = "http://localhost:5000"
+
+# Team collaboration
+response = requests.post(f"{BASE_URL}/api/team/collaborate", 
+    json={
+        "prompt": "Create a marketing strategy for a new AI product",
+        "options": {
+            "skipPlanning": False
+        }
+    }
+)
+
+result = response.json()
+print(f"Final Output: {result['finalOutput']}")
+```
+
+#### **JavaScript Example**
+```javascript
+// Team collaboration
+const response = await fetch('http://localhost:5000/api/team/collaborate', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    prompt: 'Analyze the latest AI trends and write a comprehensive report',
+    options: {
+      skipResearch: false
+    }
+  })
+});
+
+const result = await response.json();
+console.log('Collaboration Result:', result.finalOutput);
+```
+
+#### **cURL Example**
+```bash
+# Health check
+curl -X GET http://localhost:5000/health
+
+# Team collaboration
+curl -X POST http://localhost:5000/api/team/collaborate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Create a technical documentation for our API",
+    "options": {
+      "skipPlanning": false,
+      "skipResearch": false
+    }
+  }'
+
+# Get collaboration history
+curl -X GET http://localhost:5000/api/history
+```
+
 ## Advanced Usage
 
 ### **Custom Workflow Creation**
