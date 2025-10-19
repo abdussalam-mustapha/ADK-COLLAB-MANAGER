@@ -44,7 +44,7 @@ export function CapabilitiesSection() {
   return (
     <section className="section section-dark">
       <div className="container">
-        <div className="section-header">
+        <div className="section-header" data-aos="fade-up">
           <h2 className="section-title">
             Unlock Powerful Capabilities
           </h2>
@@ -55,7 +55,12 @@ export function CapabilitiesSection() {
         
         <div className="capabilities-grid">
           {capabilities.map((capability, index) => (
-            <div key={index} className="feature-card">
+            <div 
+              key={index} 
+              className="feature-card"
+              data-aos="fade-up"
+              data-aos-delay={`${(index + 1) * 100}`}
+            >
               <div className="feature-card-icon">
                 {capability.icon}
               </div>

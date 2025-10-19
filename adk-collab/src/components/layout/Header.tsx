@@ -42,9 +42,9 @@ export function Header({ onGetStarted }: HeaderProps) {
           
           {/* Mobile Actions */}
           <div className="mobile-actions">
-            <button className="btn btn-ghost btn-sm">
+            {/* <button className="btn btn-ghost btn-sm">
               Log In
-            </button>
+            </button> */}
             <button 
               className="btn btn-primary btn-sm"
               onClick={onGetStarted}
@@ -56,9 +56,9 @@ export function Header({ onGetStarted }: HeaderProps) {
         
         {/* Desktop Actions */}
         <div className="header-actions">
-          <button className="btn btn-ghost btn-sm">
+          {/* <button className="btn btn-ghost btn-sm">
             Log In
-          </button>
+          </button> */}
           <button 
             className="btn btn-primary btn-sm"
             onClick={onGetStarted}

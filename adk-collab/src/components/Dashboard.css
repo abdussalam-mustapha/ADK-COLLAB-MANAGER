@@ -501,7 +501,7 @@
   background: #0f0f0f;
   border-radius: 0.375rem;
   border: 1px solid #2a2a2a;
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: 'Cabinet Grotesk', 'Segoe UI', system-ui, -apple-system, sans-serif;
   /* Hide all scrollbars */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
@@ -593,7 +593,7 @@
   overflow-y: auto;
   white-space: pre-wrap;
   word-wrap: break-word;
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: 'Cabinet Grotesk', 'Segoe UI', system-ui, -apple-system, sans-serif;
   /* Hide all scrollbars */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
@@ -855,7 +855,7 @@
   border: 1px solid #2a2a2a;
   white-space: pre-wrap;
   word-wrap: break-word;
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: 'Cabinet Grotesk', 'Segoe UI', system-ui, -apple-system, sans-serif;
   /* Hide all scrollbars */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
@@ -872,7 +872,7 @@
   border: 1px solid #2a2a2a;
   white-space: pre-wrap;
   word-wrap: break-word;
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: 'Cabinet Grotesk', 'Segoe UI', system-ui, -apple-system, sans-serif;
   max-height: 300px; /* Keep task summary with limited height */
   /* Hide task summary scrollbars too */
   scrollbar-width: none; /* Firefox */

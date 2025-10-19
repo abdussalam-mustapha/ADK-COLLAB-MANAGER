@@ -23,7 +23,7 @@ export function TestimonialsSection() {
   return (
     <section className="section section-dark" id="testimonials">
       <div className="container">
-        <div className="section-header">
+        <div className="section-header" data-aos="fade-up">
           <h2 className="section-title">
             What Our Customers Say
           </h2>
@@ -34,7 +34,12 @@ export function TestimonialsSection() {
         
         <div className="testimonials-grid">
           {testimonials.map((testimonial, index) => (
-            <div key={index} className="testimonial-card">
+            <div 
+              key={index} 
+              className="testimonial-card"
+              data-aos="fade-up"
+              data-aos-delay={`${(index + 1) * 150}`}
+            >
               <p className="testimonial-content">
                 "{testimonial.content}"
               </p>

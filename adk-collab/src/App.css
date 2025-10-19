@@ -3,7 +3,7 @@
 /* Remove default styles and add custom ones */
 .app {
   min-height: 100vh;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Cabinet Grotesk', 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 /* Smooth scrolling */

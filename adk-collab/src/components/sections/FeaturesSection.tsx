@@ -22,7 +22,7 @@ export function FeaturesSection() {
   return (
     <section id="features" className="section">
       <div className="container">
-        <div className="section-header">
+        <div className="section-header" data-aos="fade-up">
           <h2 className="section-title">
             Seamless AI Agent Collaboration
           </h2>
@@ -33,7 +33,12 @@ export function FeaturesSection() {
         
         <div className="features-grid">
           {features.map((feature, index) => (
-            <div key={index} className="feature-card">
+            <div 
+              key={index} 
+              className="feature-card"
+              data-aos="fade-up"
+              data-aos-delay={`${(index + 1) * 100}`}
+            >
               <div className="feature-card-icon">
                 {feature.icon}
               </div>
