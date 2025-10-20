@@ -37,7 +37,6 @@ Traditional AI applications often rely on single-agent interactions, limiting th
 - **Research Synthesis**: Intelligent information consolidation
 
 #### **Persistent Storage System**
-- **File-based JSON Storage**: No database dependency
 - **Session Management**: Complete conversation history
 - **Agent Configuration**: Persistent agent settings and capabilities
 - **Export Functionality**: Copy and export results
@@ -843,7 +842,6 @@ interface CollaborationMetrics {
 - **Multiple Model Support**: Flexibility in AI providers
 
 #### **Storage & Data**
-- **JSON File Storage**: Simple, portable persistence
 - **UUID**: Unique identifier generation
 - **Zod**: Runtime type validation
 - **CORS**: Cross-origin resource sharing
@@ -935,7 +933,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **ADK-TS Documentation**: [https://github.com/iqai/adk-ts](https://github.com/iqai/adk-ts)
 - **Ollama**: [https://ollama.ai/](https://ollama.ai/)
 - **Google Custom Search**: [https://developers.google.com/custom-search](https://developers.google.com/custom-search)
-- **Project Repository**: [Your GitHub Repository URL]
+
 
 ## Support
 
